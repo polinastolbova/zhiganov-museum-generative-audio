@@ -1,0 +1,79 @@
+<CsoundSynthesizer>
+<CsOptions>
+-odac
+</CsOptions>
+
+<CsInstruments>
+
+sr = 48000
+ksmps = 32
+nchnls = 2
+0dbfs = 1
+
+giSine ftgen 1, 0, 16384, 10, 1
+
+; enhanced, smoother
+instr 1 drone
+    iFreq1 = 147
+    iFreq2 = 196
+    iFreq3 = 233
+
+    kLFO1 oscili 0.25, 0.015, giSine
+    kLFO2 oscili 0.15, 0.02,  giSine
+
+    a1 oscili 0.08 + kLFO1*0.02, iFreq1 + kLFO2*1.5, giSine
+    a2 oscili 0.08 + kLFO1*0.02, iFreq2 - kLFO2*1.5, giSine
+    a3 oscili 0.08 + kLFO1*0.02, iFreq3,             giSine
+
+    aMix = (a1 + a2 + a3) * 0.6
+
+    aFilt moogladder aMix, 900 + kLFO1*250, 0.15
+    aRev  reverb2 aFilt, 3, 0.45
+
+    outs aRev*0.45, aRev*0.45
+endin
+
+; smooth "mental" notes
+instr 2
+    iFreq = cpspch(p4)
+
+    ; softer envelope
+    aEnv linsegr 0, 0.5, 1, 4, 0
+
+    ; soft FM
+    kModLFO oscili 0.7, 0.25, giSine
+    aMod    oscili iFreq*0.4, iFreq*2, giSine
+    aCar    oscili aEnv, iFreq + aMod*kModLFO, giSine
+
+    aFilt tone aCar, 3000
+    aRev  reverb2 aFilt, 4, 0.55
+
+    outs aRev*0.35, aRev*0.35
+endin
+
+; milder air
+instr 3
+    kLFO oscili 0.25, 0.01, giSine
+    aNoise rand 0.015
+    aFilt  tone aNoise, 1300 + kLFO*400
+    aRev   reverb2 aFilt, 2.5, 0.35
+
+    outs aRev*0.25, aRev*0.25
+endin
+
+</CsInstruments>
+
+<CsScore>
+
+i1 0 3600
+i3 0 3600
+
+i2 10  4 8.00
+i2 35  4 8.03
+i2 70  4 8.07
+i2 120 4 8.02
+i2 180 4 8.09
+i2 250 4 8.05
+
+</CsScore>
+</CsoundSynthesizer>
