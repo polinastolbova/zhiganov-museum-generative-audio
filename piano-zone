@@ -1,0 +1,97 @@
+<CsoundSynthesizer>
+<CsOptions>
+-odac
+</CsOptions>
+
+<CsInstruments>
+
+sr = 48000
+ksmps = 32
+nchnls = 2
+0dbfs = 1
+
+giSine ftgen 1, 0, 16384, 10, 1
+
+; instr 1 — soft piano body (very smooth)
+instr 1
+    iF1 = 55
+    iF2 = 73
+    iF3 = 98
+
+    kDrift oscili 0.25, 0.008, giSine
+
+    ; softer amplitudes
+    a1 oscili 0.08, iF1 + kDrift, giSine
+    a2 oscili 0.07, iF2 - kDrift*0.6, giSine
+    a3 oscili 0.06, iF3 + kDrift*0.4, giSine
+
+    ; soft grain
+    aNoise rand 0.01
+    aGrain = aNoise * 0.18
+
+    aMix = (a1 + a2 + a3 + aGrain) * 0.55
+
+    ; smoothed filter
+    aFilt moogladder aMix, 500 + kDrift*150, 0.15
+
+    ; deep, soft reverb
+    aRev reverb2 aFilt, 5, 0.6
+
+    outs aRev*0.5, aRev*0.5
+endin
+
+; instr 2 — soft "string clouds"
+instr 2
+    iFreq = cpspch(p4)
+
+    ; very smooth envelope
+    aEnv linsegr 0, 1.5, 0.8, 7, 0
+
+    ; soft FM
+    kMod oscili 0.3, 0.12, giSine
+    aMod oscili iFreq*0.25, iFreq*2, giSine
+    aTone oscili aEnv*(0.25 + kMod*0.08), iFreq + aMod, giSine
+
+    aFilt butlp aTone, 3000
+    aRev  reverb2 aFilt, 6, 0.65
+
+    outs aRev*0.28, aRev*0.28
+endin
+
+; soft harmonic "breaths"
+instr 3
+    iFreq = cpspch(p4)
+
+    ; super-smooth envelope
+    aEnv linsegr 0, 1, 0.7, 3, 0
+
+    aTone oscili aEnv*0.35, iFreq, giSine
+
+    aFilt tone aTone, 2500
+    aRev  reverb2 aFilt, 5, 0.55
+
+    outs aRev*0.25, aRev*0.25
+endin
+
+</CsInstruments>
+
+<CsScore>
+
+; soft piano case — immediately audible
+i1 0 3600
+
+; string clouds are very smooth
+i2 15 8 8.00
+i2 70 8 8.05
+i2 135 8 8.07
+i2 200 8 8.02
+i2 265 8 8.09
+
+; harmonic breathing
+i3 40 4 8.03
+i3 110 4 8.08
+i3 170 4 8.01
+i3 230 4 8.06
+
+</CsScore>
+</CsoundSynthesizer>
